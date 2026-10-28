@@ -1,0 +1,81 @@
+---
+- id: rails-8.0-connection-pool
+  framework: rails
+  introduced_in: "8.0"
+  breaking_in: "8.0"
+  pattern:
+    type: method_call
+    name: connection
+    receiver_chain: "**.connection_pool"
+    conditions: []
+  message: >
+    `connection_pool.connection` is removed in Rails 8.0.
+    Use `connection_pool.with_connection { |conn| ... }` or `lease_connection` instead.
+  replacement: "connection_pool.with_connection { |conn| ... }"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html"
+  effort_minutes: 15
+
+- id: rails-8.0-params-expect
+  framework: rails
+  introduced_in: "8.0"
+  breaking_in: "8.0"
+  pattern:
+    type: method_call
+    name: permit
+    receiver_method: require
+    conditions: []
+  message: >
+    `params.require(:x).permit(...)` pattern is deprecated in Rails 8.0.
+    Use `params.expect(x: [...])` for safer parameter filtering that returns 400 on malformed input.
+  replacement: "params.expect(user: [:name, :email])"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html"
+  effort_minutes: 5
+
+- id: rails-8.0-proxy-object
+  framework: rails
+  introduced_in: "8.0"
+  breaking_in: "8.0"
+  pattern:
+    type: constant_reference
+    name: "ActiveSupport::ProxyObject"
+  message: >
+    `ActiveSupport::ProxyObject` has been removed in Rails 8.0.
+    Use `ActiveSupport::BasicObject` instead.
+  replacement: "ActiveSupport::BasicObject"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html"
+  effort_minutes: 5
+
+- id: rails-8.0-form-with-nil
+  framework: rails
+  introduced_in: "8.0"
+  breaking_in: "8.0"
+  pattern:
+    type: method_call
+    name: form_with
+    receiver: null
+    conditions:
+      - keyword_value:
+          key: model
+          value: "nil"
+  message: >
+    `form_with model: nil` is no longer valid in Rails 8.0.
+    Omit the `model:` option entirely when not using a model.
+  replacement: "form_with url: some_path"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html"
+  effort_minutes: 5
+
+- id: rails-8.0-read-encrypted-secrets
+  framework: rails
+  introduced_in: "8.0"
+  breaking_in: "8.0"
+  pattern:
+    type: method_call
+    name: read_encrypted_secrets=
+    receiver: null
+    conditions: []
+  message: >
+    `config.read_encrypted_secrets` is removed in Rails 8.0.
+    Use the credentials system instead.
+  replacement: "Remove config.read_encrypted_secrets; use Rails.application.credentials"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html"
+  effort_minutes: 30

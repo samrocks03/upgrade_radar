@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upgrade Radar Report</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #1a1a2e;
+      --card-bg: #f8f9fa;
+      --border: #dee2e6;
+      --breaking-bg: #fff5f5;
+      --breaking-fg: #c53030;
+      --breaking-badge: #e53e3e;
+      --warning-bg: #fffff0;
+      --warning-fg: #b7791f;
+      --warning-badge: #d69e2e;
+      --success: #38a169;
+      --code-bg: #edf2f7;
+      --link: #3182ce;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a2e;
+        --fg: #e2e8f0;
+        --card-bg: #2d2d44;
+        --border: #4a5568;
+        --breaking-bg: #3b1a1a;
+        --breaking-fg: #fc8181;
+        --breaking-badge: #e53e3e;
+        --warning-bg: #3b3520;
+        --warning-fg: #fbd38d;
+        --warning-badge: #d69e2e;
+        --success: #68d391;
+        --code-bg: #2d3748;
+        --link: #63b3ed;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .meta { color: var(--warning-fg); margin-bottom: 2rem; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; }
+    .stat-label { font-size: 0.85rem; opacity: 0.7; }
+    .breaking .stat-value { color: var(--breaking-fg); }
+    .warning .stat-value { color: var(--warning-fg); }
+    .success .stat-value { color: var(--success); }
+    .file-group { margin-bottom: 1.5rem; }
+    .file-name { font-weight: 600; font-size: 0.95rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+    .finding { padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 6px; border-left: 4px solid; }
+    .finding.breaking { background: var(--breaking-bg); border-color: var(--breaking-badge); }
+    .finding.warning { background: var(--warning-bg); border-color: var(--warning-badge); }
+    .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 3px; color: white; text-transform: uppercase; }
+    .badge.breaking { background: var(--breaking-badge); }
+    .badge.warning { background: var(--warning-badge); }
+    .finding-message { margin-top: 0.25rem; font-size: 0.9rem; }
+    .finding-meta { font-size: 0.8rem; opacity: 0.7; margin-top: 0.25rem; }
+    code { background: var(--code-bg); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.85rem; }
+    a { color: var(--link); }
+    footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8rem; opacity: 0.6; }
+  </style>
+</head>
+<body>
+  <h1>Upgrade Radar Report</h1>
+  <%- if @result.from_version && @result.to_version -%>
+  <p class="meta"><%= h(@result.from_version) %> → <%= h(@result.to_version) %></p>
+  <%- end -%>
+
+  <div class="stats">
+    <div class="stat breaking">
+      <div class="stat-value"><%= @summary[:breaking] %></div>
+      <div class="stat-label">Breaking</div>
+    </div>
+    <div class="stat warning">
+      <div class="stat-value"><%= @summary[:warnings] %></div>
+      <div class="stat-label">Warnings</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value"><%= @summary[:files_affected] %></div>
+      <div class="stat-label">Files Affected</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value"><%= @summary[:total_effort_human] %></div>
+      <div class="stat-label">Estimated Effort</div>
+    </div>
+  </div>
+
+  <%- if @result.findings.empty? -%>
+  <div class="stat success" style="text-align:center; padding:2rem;">
+    <div class="stat-value">✓</div>
+    <div class="stat-label">No deprecations or breaking changes found</div>
+  </div>
+  <%- else -%>
+    <%- @result.findings_by_file.each do |filepath, findings| -%>
+    <div class="file-group">
+      <div class="file-name"><%= h(filepath) %></div>
+      <%- findings.sort_by(&:line).each do |f| -%>
+      <div class="finding <%= f.severity %>">
+        <span class="badge <%= f.severity %>"><%= f.severity %></span>
+        <strong>Line <%= f.line %></strong>
+        <div class="finding-message"><%= h(f.message) %></div>
+        <div class="finding-meta">
+          <code><%= h(f.source.length > 80 ? f.source[0...80] + "..." : f.source) %></code>
+          <%- if f.rule.replacement -%>
+          <br>Fix: <code><%= h(f.rule.replacement) %></code>
+          <%- end -%>
+          <%- if f.rule.docs -%>
+          <br><a href="<%= h(f.rule.docs) %>" target="_blank" rel="noopener noreferrer">Documentation</a>
+          <%- end -%>
+        </div>
+      </div>
+      <%- end -%>
+    </div>
+    <%- end -%>
+  <%- end -%>
+
+  <footer>
+    Generated by Upgrade Radar v<%= UpgradeRadar::VERSION %> on <%= Time.now.strftime("%Y-%m-%d %H:%M:%S") %>
+    — Scanned <%= @result.files_scanned %> files in <%= @result.scan_duration.round(2) %>s
+  </footer>
+</body>
+</html>

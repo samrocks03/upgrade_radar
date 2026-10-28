@@ -1,0 +1,49 @@
+---
+- id: rails-7.2-enum-keyword-args
+  framework: rails
+  introduced_in: "7.2"
+  breaking_in: "8.0"
+  pattern:
+    type: method_call
+    name: enum
+    receiver: null
+    conditions:
+      - first_arg_type: hash
+  message: >
+    Positional hash argument to `enum` is deprecated in Rails 7.2 and removed in 8.0.
+    Use `enum :status, { active: 0, inactive: 1 }` with a positional symbol instead.
+  replacement: "enum :status, { active: 0, inactive: 1 }"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html#enumerations"
+  effort_minutes: 5
+
+- id: rails-7.2-secrets-removed
+  framework: rails
+  introduced_in: "7.2"
+  breaking_in: "7.2"
+  pattern:
+    type: method_call
+    name: secrets
+    receiver_chain: "Rails.application"
+    conditions: []
+  message: >
+    `Rails.application.secrets` has been removed in Rails 7.2.
+    Use `Rails.application.credentials` instead.
+  replacement: "Rails.application.credentials"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html#removal-of-secrets"
+  effort_minutes: 30
+
+- id: rails-7.2-alias-attribute
+  framework: rails
+  introduced_in: "7.2"
+  breaking_in: "7.2"
+  pattern:
+    type: method_call
+    name: alias_attribute
+    receiver: null
+    conditions: []
+  message: >
+    `alias_attribute` in Rails 7.2 now defines actual attribute methods that bypass custom accessors.
+    If the aliased attribute has a custom getter/setter, behavior may change silently.
+  replacement: "Verify custom accessor logic; consider alias_method if needed"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html"
+  effort_minutes: 20

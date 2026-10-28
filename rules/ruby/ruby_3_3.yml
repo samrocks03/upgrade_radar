@@ -1,0 +1,91 @@
+---
+- id: ruby-3.3-lambda-proc
+  framework: ruby
+  introduced_in: "3.3"
+  breaking_in: "3.3"
+  pattern:
+    type: method_call
+    name: lambda
+    receiver: null
+    conditions:
+      - has_block_pass: true
+  message: >
+    `lambda(&proc_variable)` raises ArgumentError in Ruby 3.3 if the Proc is not a lambda.
+    Passing a non-lambda Proc to `lambda` no longer silently converts it.
+  replacement: "Use lambda { |a, b| ... } directly, or -> (a, b) { ... }"
+  docs: "https://docs.ruby-lang.org/en/3.3/NEWS.html"
+  effort_minutes: 15
+
+- id: ruby-3.3-time-new-string
+  framework: ruby
+  introduced_in: "3.3"
+  breaking_in: "3.3"
+  pattern:
+    type: method_call
+    name: new
+    receiver: "Time"
+    conditions:
+      - first_arg_type: string
+  message: >
+    `Time.new` with a partial date string (e.g. 'YYYY-MM-DD') raises ArgumentError in Ruby 3.3.
+    Use integer positional arguments: Time.new(year, month, day).
+  replacement: "Time.new(2024, 1, 15)"
+  docs: "https://docs.ruby-lang.org/en/3.3/NEWS.html"
+  effort_minutes: 10
+
+- id: ruby-3.3-io-pipe
+  framework: ruby
+  introduced_in: "3.3"
+  breaking_in: "3.3"
+  pattern:
+    type: method_call
+    name:
+      - read
+      - open
+    receiver: "IO"
+    conditions:
+      - first_arg_starts_with: "|"
+  message: >
+    `IO.read('| command')` and `IO.open('| command')` with pipe prefix are deprecated in Ruby 3.3.
+    Use `IO.popen` instead.
+  replacement: "IO.popen('command') { |io| io.read }"
+  docs: "https://docs.ruby-lang.org/en/3.3/NEWS.html"
+  effort_minutes: 10
+
+- id: ruby-3.3-it-block-param
+  framework: ruby
+  introduced_in: "3.3"
+  breaking_in: "3.4"
+  pattern:
+    type: block_parameter
+    bare_it: true
+  message: >
+    Bare `it` inside a block refers to the first block argument in Ruby 3.4.
+    In Ruby 3.3 this emits a warning. If `it` is a method call, use explicit `self.it` or `it()`.
+  replacement: "self.it or it() for method calls; use _1 or named params"
+  docs: "https://docs.ruby-lang.org/en/3.4/NEWS.html"
+  effort_minutes: 10
+
+- id: ruby-3.3-default-gems-bundled
+  framework: ruby
+  introduced_in: "3.3"
+  breaking_in: "3.4"
+  pattern:
+    type: gemfile_dependency
+    gems:
+      - csv
+      - base64
+      - bigdecimal
+      - mutex_m
+      - drb
+      - nkf
+      - syslog
+      - observer
+      - abbrev
+      - getoptlong
+  message: >
+    These default gems became bundled gems in Ruby 3.4 and must be declared in your Gemfile.
+    In Ruby 3.3 this emits a warning; in 3.4 it raises LoadError.
+  replacement: "Add gem 'name' to your Gemfile"
+  docs: "https://docs.ruby-lang.org/en/3.4/NEWS.html"
+  effort_minutes: 5

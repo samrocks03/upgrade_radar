@@ -1,0 +1,17 @@
+---
+- id: rails-7.1-serialize-coder
+  framework: rails
+  introduced_in: "7.1"
+  breaking_in: "8.0"
+  pattern:
+    type: method_call
+    name: serialize
+    receiver: null
+    conditions:
+      - no_keyword: coder
+  message: >
+    `serialize` requires an explicit `coder:` keyword argument in Rails 7.1+.
+    Without it, Rails 8.0 raises ArgumentError.
+  replacement: "serialize :attr, coder: JSON"
+  docs: "https://guides.rubyonrails.org/upgrading_ruby_on_rails.html#new-activerecord-serialize-api"
+  effort_minutes: 5

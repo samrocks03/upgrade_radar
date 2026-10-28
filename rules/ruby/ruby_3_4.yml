@@ -1,0 +1,84 @@
+---
+- id: ruby-3.4-kwargs-index
+  framework: ruby
+  introduced_in: "3.4"
+  breaking_in: "3.4"
+  pattern:
+    type: method_call
+    name: "[]"
+    receiver: "any"
+    conditions:
+      - has_keywords: true
+      - min_positional_args: 1
+  message: >
+    Keyword arguments in indexing operators (`[]`, `[]=`) raise SyntaxError in Ruby 3.4.
+    Wrap keyword args in an explicit hash or refactor to a method call.
+  replacement: "obj.fetch(key, **opts) or obj[key, { opt: val }]"
+  docs: "https://docs.ruby-lang.org/en/3.4/NEWS.html"
+  effort_minutes: 15
+
+- id: ruby-3.4-range-size
+  framework: ruby
+  introduced_in: "3.4"
+  breaking_in: "3.4"
+  confidence: low
+  pattern:
+    type: method_call
+    name: size
+    receiver: "any"
+    conditions: []
+  message: >
+    `Range#size` raises TypeError for non-iterable ranges (Float endpoints, beginless) in Ruby 3.4.
+    Note: this rule has low confidence statically — receiver type cannot always be determined.
+    Verify manually if the receiver is a Range with Float or nil bounds.
+  replacement: "Use Range#count for iterable ranges, or calculate manually"
+  docs: "https://docs.ruby-lang.org/en/3.4/NEWS.html"
+  effort_minutes: 10
+
+- id: ruby-3.4-socket-resolution-error
+  framework: ruby
+  introduced_in: "3.4"
+  breaking_in: "3.4"
+  pattern:
+    type: constant_reference
+    name: "SocketError"
+    context: rescue
+  message: >
+    Ruby 3.4 introduces `Socket::ResolutionError` for DNS failures (subclass of SocketError).
+    Existing `rescue SocketError` still catches it, but if you need to handle DNS failures
+    specifically, use `rescue Socket::ResolutionError`.
+  replacement: "rescue SocketError, Socket::ResolutionError"
+  docs: "https://docs.ruby-lang.org/en/3.4/NEWS.html"
+  effort_minutes: 10
+
+- id: ruby-3.4-chilled-string
+  framework: ruby
+  introduced_in: "3.4"
+  breaking_in: "3.4"
+  pattern:
+    type: string_mutation
+    detect_literal_mutation: true
+  message: >
+    Mutating a string literal emits a deprecation warning in Ruby 3.4 ('chilled strings').
+    This prepares for frozen string literals becoming the default in a future Ruby version.
+  replacement: "Use String.new('str') or 'str'.dup for mutable strings, or +'str'"
+  docs: "https://docs.ruby-lang.org/en/3.4/NEWS.html"
+  effort_minutes: 5
+
+- id: ruby-3.4-hash-inspect
+  framework: ruby
+  introduced_in: "3.4"
+  breaking_in: "3.4"
+  confidence: low
+  pattern:
+    type: method_call
+    name: inspect
+    receiver: "any"
+    conditions: []
+  message: >
+    Hash#inspect in Ruby 3.4 uses colon syntax for symbol keys: `{a: 1}` instead of `{:a=>1}`.
+    Note: low confidence statically — cannot determine if receiver is a Hash.
+    Check tests that assert on Hash#inspect or Hash#to_s output.
+  replacement: "Update test expectations to match new format"
+  docs: "https://docs.ruby-lang.org/en/3.4/NEWS.html"
+  effort_minutes: 10
